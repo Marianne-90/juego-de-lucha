@@ -70,19 +70,6 @@ class Sprite {
   }
 }
 
-const rectangularColition = ({ rectangle1, rectangle2 }) => {
-  return (
-    rectangle1.atackBox.position.x + rectangle1.atackBox.with >=
-      rectangle2.position.x &&
-    rectangle1.atackBox.position.x <=
-      rectangle2.position.x + rectangle2.width &&
-    rectangle1.atackBox.position.y >=
-      rectangle2.position.y - rectangle2.height &&
-    rectangle1.atackBox.position.y - rectangle1.atackBox.height <=
-      rectangle2.position.y
-  );
-};
-
 let player = new Sprite({
   position: {
     x: 0,
@@ -135,6 +122,54 @@ const keys = {
   },
 };
 
+const rectangularColition = ({ rectangle1, rectangle2 }) => {
+  return (
+    rectangle1.atackBox.position.x + rectangle1.atackBox.with >=
+      rectangle2.position.x &&
+    rectangle1.atackBox.position.x <=
+      rectangle2.position.x + rectangle2.width &&
+    rectangle1.atackBox.position.y >=
+      rectangle2.position.y - rectangle2.height &&
+    rectangle1.atackBox.position.y - rectangle1.atackBox.height <=
+      rectangle2.position.y
+  );
+};
+
+let timer = 60;
+let timerId;
+
+const determineWinner = ({player, enemy, timerId}) => {
+
+    clearTimeout(timerId)
+
+    let d = document.querySelector("#displayText");
+    d.style.display = "flex";
+
+    if (player.health === enemy.health) {
+        d.innerHTML = "TIE";
+    }
+    if (player.health > enemy.health) {
+        d.innerHTML = "PLAYER 1 WINS";
+    }
+    if (player.health < enemy.health) {
+        d.innerHTML = "PLAYER 2 WINS";
+    }
+
+};
+
+const decreseTimer = () => {
+  if (timer > 0) {
+    timerId = setTimeout(decreseTimer, 1000);
+    timer--;
+    document.querySelector("#timer").innerHTML = timer;
+  }
+  if (timer === 0) {
+    determineWinner({player, enemy, timerId})
+  }
+};
+
+decreseTimer();
+
 function animate() {
   window.requestAnimationFrame(animate);
   c.fillStyle = "black";
@@ -174,8 +209,8 @@ function animate() {
     player.isAttacking
   ) {
     // player.isAttacking = false;
-    enemy.health -= 1
-    document.querySelector('#enemyHealth').style.width = enemy.health+'%';
+    enemy.health -= 1;
+    document.querySelector("#enemyHealth").style.width = enemy.health + "%";
   }
 
   //DETECT COLITON ENEMY
@@ -184,8 +219,14 @@ function animate() {
     enemy.isAttacking
   ) {
     // enemy.isAttacking = false; //*! en el tutorial lo ponen pero no entiendo para qué si el set time out lo vuelve false en 100 milisegundos
-    player.health -= 1
-    document.querySelector('#playerHealth').style.width = player.health+'%';
+    player.health -= 1;
+    document.querySelector("#playerHealth").style.width = player.health + "%";
+  }
+
+  //END GAME BASED ON HEALD
+
+  if(enemy.health === 0 || player.health === 0){
+    determineWinner({player, enemy, timerId})
   }
 }
 
