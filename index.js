@@ -4,25 +4,53 @@ const c = canvas.getContext("2d");
 canvas.width = 1024;
 canvas.height = 576;
 
-const gravity = 0.2;
+const gravity = 0.7;
 
 c.fillRect(0, 0, canvas.width, canvas.height);
 
 class Sprite {
-  constructor({ position, velocity }) {
+  constructor({ position, velocity, color = "red", offset }) {
     this.position = position;
     this.velocity = velocity;
+    this.color = color;
     this.height = 150;
+    this.width = 50;
     this.lastKey;
+    this.isAttacking;
+    this.atackBox = {
+      position: {
+        x: this.position.x,
+        y: this.position.y,
+      },
+      with: 100,
+      height: 50,
+      offset,
+    };
+    this.health = 100;
   }
 
   draw() {
-    c.fillStyle = "red";
-    c.fillRect(this.position.x, this.position.y, 50, this.height);
+    c.fillStyle = this.color;
+    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+
+    if (this.isAttacking) {
+      //** atack box */
+      c.fillStyle = "green";
+      c.fillRect(
+        this.atackBox.position.x,
+        this.atackBox.position.y,
+        this.atackBox.with,
+        this.atackBox.height
+      );
+    }
   }
 
   update() {
     this.draw();
+
+    // dibujar draw box para que siga a los personajes porque si no se queda congelado
+    this.atackBox.position.x = this.position.x - this.atackBox.offset.x;
+    this.atackBox.position.y = this.position.y;
 
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
@@ -33,7 +61,27 @@ class Sprite {
       this.velocity.y += gravity;
     }
   }
+
+  attack() {
+    this.isAttacking = true;
+    setTimeout(() => {
+      this.isAttacking = false;
+    }, 100);
+  }
 }
+
+const rectangularColition = ({ rectangle1, rectangle2 }) => {
+  return (
+    rectangle1.atackBox.position.x + rectangle1.atackBox.with >=
+      rectangle2.position.x &&
+    rectangle1.atackBox.position.x <=
+      rectangle2.position.x + rectangle2.width &&
+    rectangle1.atackBox.position.y >=
+      rectangle2.position.y - rectangle2.height &&
+    rectangle1.atackBox.position.y - rectangle1.atackBox.height <=
+      rectangle2.position.y
+  );
+};
 
 let player = new Sprite({
   position: {
@@ -43,6 +91,10 @@ let player = new Sprite({
   velocity: {
     x: 0,
     y: 10,
+  },
+  offset: {
+    x: 0,
+    y: 0,
   },
 });
 
@@ -55,9 +107,12 @@ let enemy = new Sprite({
     x: 0,
     y: 0,
   },
+  offset: {
+    x: 50,
+    y: 0,
+  },
+  color: "blue",
 });
-
-let lastKey;
 
 const keys = {
   a: {
@@ -93,34 +148,67 @@ function animate() {
 
   player.velocity.x = 0; //*? esto es para limpiar la velociad en caso por ejemplo levantemos la tecla y queremos que pare
 
-  if (keys.a.pressed && lastKey == "a") {
-    player.velocity.x = -1;
+  if (keys.a.pressed && player.lastKey == "a") {
+    player.velocity.x = -5;
   }
 
-  if (keys.d.pressed && lastKey == "d") {
-    player.velocity.x = 1;
+  if (keys.d.pressed && player.lastKey == "d") {
+    player.velocity.x = 5;
   }
 
-  
+  //ENEMY MOVEMENT
+
+  enemy.velocity.x = 0;
+
+  if (keys.ArrowRight.pressed && enemy.lastKey == "ArrowRight") {
+    enemy.velocity.x = 5;
+  }
+
+  if (keys.ArrowLeft.pressed && enemy.lastKey == "ArrowLeft") {
+    enemy.velocity.x = -5;
+  }
+
+  //DETECT COLITON PLAYER
+  if (
+    rectangularColition({ rectangle1: player, rectangle2: enemy }) &&
+    player.isAttacking
+  ) {
+    // player.isAttacking = false;
+    enemy.health -= 1
+    document.querySelector('#enemyHealth').style.width = enemy.health+'%';
+  }
+
+  //DETECT COLITON ENEMY
+  if (
+    rectangularColition({ rectangle1: enemy, rectangle2: player }) &&
+    enemy.isAttacking
+  ) {
+    // enemy.isAttacking = false; //*! en el tutorial lo ponen pero no entiendo para qué si el set time out lo vuelve false en 100 milisegundos
+    player.health -= 1
+    document.querySelector('#playerHealth').style.width = player.health+'%';
+  }
 }
 
 animate();
 
 window.addEventListener("keydown", (event) => {
-  console.log(event.key);
-
   switch (event.key) {
     case "d":
       keys.d.pressed = true;
-      lastKey = "d"; //*? esto es para que por ejemplo si estás precionando a y pasas a d d se active y no se quede quiero por el condicional
+      player.lastKey = "d"; //*? esto es para que por ejemplo si estás precionando a y pasas a d d se active y no se quede quiero por el condicional
       break;
     case "a":
       keys.a.pressed = true;
-      lastKey = "a";
+      player.lastKey = "a";
       break;
     case "w":
-      player.velocity.y = -10;
+      player.velocity.y = -20;
       break;
+    case " ":
+      player.attack();
+      break;
+
+    //   ENEMY KEYS
 
     case "ArrowRight":
       keys.ArrowRight.pressed = true;
@@ -131,7 +219,10 @@ window.addEventListener("keydown", (event) => {
       enemy.lastKey = "ArrowLeft";
       break;
     case "ArrowUp":
-      enemy.velocity.y = -10;
+      enemy.velocity.y = -20;
+      break;
+    case "ArrowDown":
+      enemy.attack();
       break;
 
     default:
