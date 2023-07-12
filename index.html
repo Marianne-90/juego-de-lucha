@@ -15,6 +15,10 @@
         box-sizing: border-box;
         font-family: "Press Start 2P", cursive;
       }
+
+      #button:hover {
+        background-color: #b91c1c !important;
+      }
     </style>
   </head>
   <body>
@@ -109,6 +113,35 @@
         "
       >
         tie
+      </div>
+      <div
+        id="playAgain"
+        style="
+          position: absolute;
+          color: black;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+        "
+      >
+        <div
+          id="button"
+          onclick="{handleReset()}"
+          style="
+            display: none;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            cursor: pointer;
+            background-color: #ef4444;
+            color: white;
+          "
+        >
+          Play Again
+        </div>
       </div>
       <canvas></canvas>
     </div>

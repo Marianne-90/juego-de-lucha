@@ -28,6 +28,9 @@ const rectangularColition = ({ rectangle1, rectangle2 }) => {
       if (player.health < enemy.health) {
           d.innerHTML = "PLAYER 2 WINS";
       }
+
+      d = document.querySelector("#button");
+      d.style.display = "block";
   
   };
   
@@ -40,4 +43,34 @@ const rectangularColition = ({ rectangle1, rectangle2 }) => {
     if (timer === 0) {
       determineWinner({player, enemy, timerId})
     }
+  };
+
+  const handleReset = () => {
+    player.position = { x: 0, y: 0 };
+  
+    enemy.position = { x: 400, y: 100 };
+  
+    player.reset();
+    enemy.reset();
+  
+    gsap.to("#enemyHealth", {
+      width: enemy.health + "%",
+    });
+  
+    gsap.to("#playerHealth", {
+      width: player.health + "%",
+    });
+  
+    clearTimeout(timerId);
+  
+    timer = 60;
+  
+    decreseTimer();
+  
+    let d = document.querySelector("#displayText");
+    d.style.display = "none";
+  
+    d = document.querySelector("#button");
+    d.style.display = "none";
+  
   };

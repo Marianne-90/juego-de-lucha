@@ -169,8 +169,8 @@ function animate() {
   c.fillRect(0, 0, canvas.width, canvas.height);
   background.update();
   shop.update();
-  c.fillStyle = 'rgba(255, 255, 255, .15)'
-  c.fillRect(0,0, canvas.width, canvas.height);
+  c.fillStyle = "rgba(255, 255, 255, .15)";
+  c.fillRect(0, 0, canvas.width, canvas.height);
   player.update();
   enemy.update();
 
@@ -232,9 +232,9 @@ function animate() {
     // document.querySelector("#enemyHealth").style.width = enemy.health + "%";
     //*! esto le añade una animación cuando deciende la salud
 
-    gsap.to("#enemyHealth",{
-      width: enemy.health + "%"
-    })
+    gsap.to("#enemyHealth", {
+      width: enemy.health + "%",
+    });
   }
 
   //MISS HIT PLAYER
@@ -253,10 +253,10 @@ function animate() {
     enemy.isAttacking = false;
     player.takeHit();
 
-    // document.querySelector("#playerHealth").style.width = player.health + "%"; 
-    gsap.to("#playerHealth",{
-      width: player.health + "%"
-    })
+    // document.querySelector("#playerHealth").style.width = player.health + "%";
+    gsap.to("#playerHealth", {
+      width: player.health + "%",
+    });
   }
 
   //MISS HIT ENEMY
@@ -337,3 +337,5 @@ window.addEventListener("keyup", (event) => {
       break;
   }
 });
+
+

@@ -117,7 +117,6 @@ class Fighter extends Sprite {
 
   update() {
     this.draw();
-
     if (this.dead !== true) this.animateFrames();
 
     // dibujar draw box para que siga a los personajes porque si no se queda congelado
@@ -171,8 +170,9 @@ class Fighter extends Sprite {
       return;
 
     //over writing all other animations with dead animation
-    if (this.image === this.sprites.dead.image) {
-      if (this.frameCurrent === this.sprites.dead.framesMax -1 ) {
+    if (this.image === this.sprites.dead.image && this.health <= 0) {
+
+      if (this.frameCurrent === this.sprites.dead.framesMax -1  ) {
           this.dead = true;
       }
       return;
@@ -186,46 +186,6 @@ class Fighter extends Sprite {
       this.frameCurrent = 0;
     }
 
-    // switch (sprite) {
-    //   case "idle":
-    //     if (this.image !== this.sprites.idle.image) {
-    //       this.framesMax = this.sprites.idle.framesMax;
-    //       this.image = this.sprites.idle.image;
-    //       this.frameCurrent = 0;
-    //     }
-    //     break;
-    //   case "run":
-    //     if (this.image !== this.sprites.run.image) {
-    //       this.framesMax = this.sprites.run.framesMax;
-    //       this.image = this.sprites.run.image;
-    //       this.frameCurrent = 0;
-    //     }
-    //     break;
-    //   case "jump":
-    //     if (this.image !== this.sprites.jump.image) {
-    //       this.image = this.sprites.jump.image;
-    //       this.framesMax = this.sprites.jump.framesMax;
-    //       this.frameCurrent = 0;
-    //     }
-    //     break;
-    //   case "fall":
-    //     if (this.image !== this.sprites.fall.image) {
-    //       this.image = this.sprites.fall.image;
-    //       this.framesMax = this.sprites.fall.framesMax;
-    //       this.frameCurrent = 0;
-    //     }
-    //     break;
-    //   case "attack1":
-    //     if (this.image !== this.sprites.attack1.image) {
-    //       this.image = this.sprites.attack1.image;
-    //       this.framesMax = this.sprites.attack1.framesMax;
-    //       this.frameCurrent = 0;
-    //     }
-    //     break;
-
-    //   default:
-    //     break;
-    // }
   }
 
   takeHit() {
@@ -236,5 +196,11 @@ class Fighter extends Sprite {
     } else {
       this.switchSpride("takeHit");
     }
+  }
+
+  reset(){
+    this.dead = false;
+    this.health = 100;
+    this.switchSpride("idle");
   }
 }
