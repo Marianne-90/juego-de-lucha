@@ -7,27 +7,24 @@ canvas.height = 576;
 const gravity = 0.7;
 
 const background = new Sprite({
-  position:{
-    x:0,
-    y:0
+  position: {
+    x: 0,
+    y: 0,
   },
-  imageSrc: './img/background.png'
+  imageSrc: "./img/background.png",
 });
 
 const shop = new Sprite({
-  position:{
-    x:600,
-    y:128
+  position: {
+    x: 600,
+    y: 128,
   },
-  imageSrc: './img/shop.png',
+  imageSrc: "./img/shop.png",
   scale: 2.75,
-  framesMax:6,
+  framesMax: 6,
 });
 
-
 c.fillRect(0, 0, canvas.width, canvas.height);
-
-
 
 let player = new Fighter({
   position: {
@@ -38,9 +35,47 @@ let player = new Fighter({
     x: 0,
     y: 10,
   },
-  offset: {
-    x: 0,
-    y: 0,
+  imageSrc: "./img/samuraiMack/Idle.png",
+  framesMax: 8,
+  scale: 2.5,
+  offset: { x: 215, y: 157 },
+  sprites: {
+    idle: {
+      imageSrc: "./img/samuraiMack/Idle.png",
+      framesMax: 8,
+    },
+    run: {
+      imageSrc: "./img/samuraiMack/Run.png",
+      framesMax: 8,
+    },
+    jump: {
+      imageSrc: "./img/samuraiMack/Jump.png",
+      framesMax: 2,
+    },
+    fall: {
+      imageSrc: "./img/samuraiMack/Fall.png",
+      framesMax: 2,
+    },
+    attack1: {
+      imageSrc: "./img/samuraiMack/Attack1.png",
+      framesMax: 6,
+    },
+    takeHit: {
+      imageSrc: "./img/samuraiMack/Take Hit.png",
+      framesMax: 4,
+    },
+    dead: {
+      imageSrc: "./img/samuraiMack/Death.png",
+      framesMax: 6,
+    },
+  },
+  atackBox: {
+    offset: {
+      x: -50,
+      y: 50,
+    },
+    width: 160,
+    height: 50,
   },
 });
 
@@ -57,7 +92,49 @@ let enemy = new Fighter({
     x: 50,
     y: 0,
   },
-  color: "blue",
+
+  imageSrc: "./img/kenji/Idle.png",
+  framesMax: 4,
+  scale: 2.5,
+  offset: { x: 215, y: 167 },
+  sprites: {
+    idle: {
+      imageSrc: "./img/kenji/Idle.png",
+      framesMax: 4,
+    },
+    run: {
+      imageSrc: "./img/kenji/Run.png",
+      framesMax: 8,
+    },
+    jump: {
+      imageSrc: "./img/kenji/Jump.png",
+      framesMax: 2,
+    },
+    fall: {
+      imageSrc: "./img/kenji/Fall.png",
+      framesMax: 2,
+    },
+    attack1: {
+      imageSrc: "./img/kenji/Attack1.png",
+      framesMax: 4,
+    },
+    takeHit: {
+      imageSrc: "./img/kenji/TakeHit.png",
+      framesMax: 3,
+    },
+    dead: {
+      imageSrc: "./img/kenji/Death.png",
+      framesMax: 7,
+    },
+  },
+  atackBox: {
+    offset: {
+      x: 160,
+      y: 50,
+    },
+    width: 160,
+    height: 50,
+  },
 });
 
 const keys = {
@@ -84,7 +161,6 @@ const keys = {
 let timer = 60;
 let timerId;
 
-
 decreseTimer();
 
 function animate() {
@@ -93,7 +169,8 @@ function animate() {
   c.fillRect(0, 0, canvas.width, canvas.height);
   background.update();
   shop.update();
-
+  c.fillStyle = 'rgba(255, 255, 255, .15)'
+  c.fillRect(0,0, canvas.width, canvas.height);
   player.update();
   enemy.update();
 
@@ -103,12 +180,22 @@ function animate() {
 
   player.velocity.x = 0; //*? esto es para limpiar la velociad en caso por ejemplo levantemos la tecla y queremos que pare
 
-  if (keys.a.pressed && player.lastKey == "a") {
+  if (keys.a.pressed && player.lastKey === "a") {
+    player.switchSpride("run");
     player.velocity.x = -5;
+  } else if (keys.d.pressed && player.lastKey === "d") {
+    player.switchSpride("run");
+    player.velocity.x = 5;
+  } else {
+    player.switchSpride("idle"); //*? esto es para limpiar la imagen
   }
 
-  if (keys.d.pressed && player.lastKey == "d") {
-    player.velocity.x = 5;
+  //Jump
+
+  if (player.velocity.y < 0) {
+    player.switchSpride("jump");
+  } else if (player.velocity.y > 0) {
+    player.switchSpride("fall");
   }
 
   //ENEMY MOVEMENT
@@ -116,78 +203,118 @@ function animate() {
   enemy.velocity.x = 0;
 
   if (keys.ArrowRight.pressed && enemy.lastKey == "ArrowRight") {
+    enemy.switchSpride("run");
     enemy.velocity.x = 5;
-  }
-
-  if (keys.ArrowLeft.pressed && enemy.lastKey == "ArrowLeft") {
+  } else if (keys.ArrowLeft.pressed && enemy.lastKey == "ArrowLeft") {
+    enemy.switchSpride("run");
     enemy.velocity.x = -5;
+  } else {
+    enemy.switchSpride("idle"); //*? esto es para limpiar la imagen
   }
 
-  //DETECT COLITON PLAYER
+  //Jump
+
+  if (enemy.velocity.y < 0) {
+    enemy.switchSpride("jump");
+  } else if (enemy.velocity.y > 0) {
+    enemy.switchSpride("fall");
+  }
+
+  //DETECT COLITON PLAYER AND ENEMY GETS HIT
   if (
     rectangularColition({ rectangle1: player, rectangle2: enemy }) &&
-    player.isAttacking
+    player.isAttacking &&
+    player.frameCurrent === 4 //*! esto es para que ataque justo en el frame 4
   ) {
-    // player.isAttacking = false;
-    enemy.health -= 1;
-    document.querySelector("#enemyHealth").style.width = enemy.health + "%";
+    player.isAttacking = false;
+    enemy.takeHit();
+
+    // document.querySelector("#enemyHealth").style.width = enemy.health + "%";
+    //*! esto le añade una animación cuando deciende la salud
+
+    gsap.to("#enemyHealth",{
+      width: enemy.health + "%"
+    })
   }
 
-  //DETECT COLITON ENEMY
+  //MISS HIT PLAYER
+
+  if (player.isAttacking && player.frameCurrent === 4) {
+    player.isAttacking = false;
+  }
+
+  //DETECT COLITON ENEMY AND PLAYER GETS HIT
+
   if (
     rectangularColition({ rectangle1: enemy, rectangle2: player }) &&
-    enemy.isAttacking
+    enemy.isAttacking &&
+    player.frameCurrent === 2 //*! esto es para que ataque justo en el frame 2
   ) {
-    // enemy.isAttacking = false; //*! en el tutorial lo ponen pero no entiendo para qué si el set time out lo vuelve false en 100 milisegundos
-    player.health -= 1;
-    document.querySelector("#playerHealth").style.width = player.health + "%";
+    enemy.isAttacking = false;
+    player.takeHit();
+
+    // document.querySelector("#playerHealth").style.width = player.health + "%"; 
+    gsap.to("#playerHealth",{
+      width: player.health + "%"
+    })
+  }
+
+  //MISS HIT ENEMY
+
+  if (enemy.isAttacking && enemy.frameCurrent === 2) {
+    enemy.isAttacking = false;
   }
 
   //END GAME BASED ON HEALD
 
-  if(enemy.health === 0 || player.health === 0){
-    determineWinner({player, enemy, timerId})
+  if (enemy.health === 0 || player.health === 0) {
+    determineWinner({ player, enemy, timerId });
   }
 }
 
 animate();
 
 window.addEventListener("keydown", (event) => {
-  switch (event.key) {
-    case "d":
-      keys.d.pressed = true;
-      player.lastKey = "d"; //*? esto es para que por ejemplo si estás precionando a y pasas a d d se active y no se quede quiero por el condicional
-      break;
-    case "a":
-      keys.a.pressed = true;
-      player.lastKey = "a";
-      break;
-    case "w":
-      player.velocity.y = -20;
-      break;
-    case " ":
-      player.attack();
-      break;
+  if (!player.dead) {
+    switch (event.key) {
+      case "d":
+        keys.d.pressed = true;
+        player.lastKey = "d"; //*? esto es para que por ejemplo si estás precionando a y pasas a d d se active y no se quede quiero por el condicional
+        break;
+      case "a":
+        keys.a.pressed = true;
+        player.lastKey = "a";
+        break;
+      case "w":
+        player.velocity.y = -20;
+        break;
+      case " ":
+        player.attack();
+        break;
+    }
+  }
 
-    //   ENEMY KEYS
+  //   ENEMY KEYS
+  if (!enemy.dead) {
+    switch (event.key) {
+      case "ArrowRight":
+        keys.ArrowRight.pressed = true;
+        enemy.lastKey = "ArrowRight";
+        break;
+      case "ArrowLeft":
+        keys.ArrowLeft.pressed = true;
+        enemy.lastKey = "ArrowLeft";
+        break;
+      case "ArrowUp":
+        enemy.velocity.y = -20;
+        break;
+      case "ArrowDown":
+        enemy.attack();
+        break;
 
-    case "ArrowRight":
-      keys.ArrowRight.pressed = true;
-      enemy.lastKey = "ArrowRight";
-      break;
-    case "ArrowLeft":
-      keys.ArrowLeft.pressed = true;
-      enemy.lastKey = "ArrowLeft";
-      break;
-    case "ArrowUp":
-      enemy.velocity.y = -20;
-      break;
-    case "ArrowDown":
-      enemy.attack();
-      break;
-
-    default:
-      break;
+      default:
+        break;
+    }
   }
 });
 
